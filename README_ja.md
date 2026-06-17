@@ -225,91 +225,156 @@ NANOCHAT_DTYPE=bfloat16 torchrun --nproc_per_node=8 -m scripts.base_train
 なお、推論時の fp16 はすべての環境で問題なく利用できます。
 
 
-## Guides
+## ガイド
 
-I've published a number of guides that might contain helpful information, most recent to least recent:
+nanochat に関する各種ガイドを公開しています。新しいものから順に掲載しています。
 
-- [Feb 1 2026: Beating GPT-2 for <<$100: the nanochat journey](https://github.com/karpathy/nanochat/discussions/481)
-- [Jan 7 miniseries v1](https://github.com/karpathy/nanochat/discussions/420) documents the first nanochat miniseries of models.
-- To add new abilities to nanochat, see [Guide: counting r in strawberry (and how to add abilities generally)](https://github.com/karpathy/nanochat/discussions/164).
-- To customize your nanochat, see [Guide: infusing identity to your nanochat](https://github.com/karpathy/nanochat/discussions/139) in Discussions, which describes how you can tune your nanochat's personality through synthetic data generation and mixing that data into the SFT stage.
-- [Oct 13 2025: original nanochat post](https://github.com/karpathy/nanochat/discussions/1) introducing nanochat, though now it contains some deprecated information and the model is a lot older (with worse results) than current master.
+* [2026年2月1日: Beating GPT-2 for <<$100: the nanochat journey](https://github.com/karpathy/nanochat/discussions/481)
 
-## File structure
+  * 100ドル未満で GPT-2 を超えるまでの nanochat 開発の歩みを解説しています。
 
-```
+* [2026年1月7日: Miniseries v1](https://github.com/karpathy/nanochat/discussions/420)
+
+  * nanochat 初の「Miniseries」モデル群について解説しています。
+
+* nanochat に新しい能力を追加したい場合は、
+  [Guide: counting r in strawberry (and how to add abilities generally)](https://github.com/karpathy/nanochat/discussions/164)
+  を参照してください。
+
+* nanochat の個性や人格をカスタマイズしたい場合は、
+  [Guide: infusing identity to your nanochat](https://github.com/karpathy/nanochat/discussions/139)
+  を参照してください。合成データの生成と SFT（教師ありファインチューニング）への組み込みによって、モデルの人格を調整する方法が説明されています。
+
+* [2025年10月13日: nanochat 初公開記事](https://github.com/karpathy/nanochat/discussions/1)
+
+  * nanochat の最初の紹介記事です。現在では一部情報が古くなっており、当時のモデル性能も現在の master ブランチより低いものとなっています。
+
+## ディレクトリ構成
+
+```text
 .
 ├── LICENSE
 ├── README.md
 ├── dev
-│   ├── gen_synthetic_data.py       # Example synthetic data for identity
-│   ├── generate_logo.html
-│   ├── nanochat.png
-│   └── repackage_data_reference.py # Pretraining data shard generation
+│   ├── gen_synthetic_data.py       # 人格付与用の合成データ生成サンプル
+│   ├── generate_logo.html          # ロゴ生成用 HTML
+│   ├── nanochat.png                # nanochat ロゴ画像
+│   └── repackage_data_reference.py # 事前学習データシャード生成
 ├── nanochat
-│   ├── __init__.py                 # empty
-│   ├── checkpoint_manager.py       # Save/Load model checkpoints
-│   ├── common.py                   # Misc small utilities, quality of life
-│   ├── core_eval.py                # Evaluates base model CORE score (DCLM paper)
-│   ├── dataloader.py               # Tokenizing Distributed Data Loader
-│   ├── dataset.py                  # Download/read utils for pretraining data
-│   ├── engine.py                   # Efficient model inference with KV Cache
-│   ├── execution.py                # Allows the LLM to execute Python code as tool
-│   ├── gpt.py                      # The GPT nn.Module Transformer
-│   ├── logo.svg
-│   ├── loss_eval.py                # Evaluate bits per byte (instead of loss)
-│   ├── optim.py                    # AdamW + Muon optimizer, 1GPU and distributed
-│   ├── report.py                   # Utilities for writing the nanochat Report
-│   ├── tokenizer.py                # BPE Tokenizer wrapper in style of GPT-4
-│   └── ui.html                     # HTML/CSS/JS for nanochat frontend
+│   ├── __init__.py                 # 空ファイル
+│   ├── checkpoint_manager.py       # モデルチェックポイントの保存・読み込み
+│   ├── common.py                   # 共通ユーティリティ
+│   ├── core_eval.py                # CORE スコア評価（DCLM 論文準拠）
+│   ├── dataloader.py               # 分散トークナイズデータローダー
+│   ├── dataset.py                  # 事前学習データの取得・読み込み
+│   ├── engine.py                   # KV キャッシュ対応高速推論エンジン
+│   ├── execution.py                # Python コード実行ツール機能
+│   ├── gpt.py                      # GPT Transformer 本体
+│   ├── logo.svg                    # ロゴ SVG
+│   ├── loss_eval.py                # Bits Per Byte 評価
+│   ├── optim.py                    # AdamW + Muon オプティマイザ
+│   ├── report.py                   # nanochat レポート生成補助
+│   ├── tokenizer.py                # GPT-4 スタイル BPE トークナイザ
+│   └── ui.html                     # Web UI (HTML/CSS/JavaScript)
 ├── pyproject.toml
 ├── runs
-│   ├── miniseries.sh               # Miniseries training script
-│   ├── runcpu.sh                   # Small example of how to run on CPU/MPS
-│   ├── scaling_laws.sh             # Scaling laws experiments
-│   └── speedrun.sh                 # Train the ~$100 nanochat d20
+│   ├── miniseries.sh               # Miniseries 学習スクリプト
+│   ├── runcpu.sh                   # CPU / MPS 実行例
+│   ├── scaling_laws.sh             # スケーリング則実験
+│   └── speedrun.sh                 # 約100ドルで GPT-2 クラスを学習
 ├── scripts
-│   ├── base_eval.py                # Base model: CORE score, bits per byte, samples
-│   ├── base_train.py               # Base model: train
-│   ├── chat_cli.py                 # Chat model: talk to over CLI
-│   ├── chat_eval.py                # Chat model: eval tasks
-│   ├── chat_rl.py                  # Chat model: reinforcement learning
-│   ├── chat_sft.py                 # Chat model: train SFT
-│   ├── chat_web.py                 # Chat model: talk to over WebUI
-│   ├── tok_eval.py                 # Tokenizer: evaluate compression rate
-│   └── tok_train.py                # Tokenizer: train it
+│   ├── base_eval.py                # 基盤モデル評価
+│   ├── base_train.py               # 基盤モデル学習
+│   ├── chat_cli.py                 # CLI チャット
+│   ├── chat_eval.py                # チャットモデル評価
+│   ├── chat_rl.py                  # 強化学習 (RL)
+│   ├── chat_sft.py                 # SFT 学習
+│   ├── chat_web.py                 # Web UI チャット
+│   ├── tok_eval.py                 # トークナイザ評価
+│   └── tok_train.py                # トークナイザ学習
 ├── tasks
-│   ├── arc.py                      # Multiple choice science questions
-│   ├── common.py                   # TaskMixture | TaskSequence
-│   ├── customjson.py               # Make Task from arbitrary jsonl convos
-│   ├── gsm8k.py                    # 8K Grade School Math questions
-│   ├── humaneval.py                # Misnomer; Simple Python coding task
-│   ├── mmlu.py                     # Multiple choice questions, broad topics
-│   ├── smoltalk.py                 # Conglomerate dataset of SmolTalk from HF
-│   └── spellingbee.py              # Task teaching model to spell/count letters
+│   ├── arc.py                      # 理科系選択問題
+│   ├── common.py                   # TaskMixture / TaskSequence
+│   ├── customjson.py               # 任意 JSONL 会話データから Task 作成
+│   ├── gsm8k.py                    # 小学校レベル算数問題
+│   ├── humaneval.py                # 簡易 Python コーディング課題
+│   ├── mmlu.py                     # 幅広い分野の選択問題
+│   ├── smoltalk.py                 # Hugging Face SmolTalk データセット
+│   └── spellingbee.py              # スペル・文字数カウント学習タスク
 ├── tests
 │   └── test_engine.py
 └── uv.lock
 ```
 
-## Contributing
+## コントリビューション
 
-The goal of nanochat is to improve the state of the art in micro models that are accessible to work with end to end on budgets of < $1000 dollars. Accessibility is about overall cost but also about cognitive complexity - nanochat is not an exhaustively configurable LLM "framework"; there are no giant configuration objects, model factories, or if-then-else monsters in the code base. It is a single, cohesive, minimal, readable, hackable, maximally-forkable "strong baseline" codebase designed to run start to end and produce a ChatGPT model you can talk to. Currently, the most interesting part personally is speeding up the latency to GPT-2 (i.e. getting a CORE score above 0.256525). Currently this takes ~3 hours, but by improving the pretraining stage we can improve this further.
+nanochat の目標は、
 
-Current AI policy: disclosure. When submitting a PR, please declare any parts that had substantial LLM contribution and that you have not written or that you do not fully understand.
+**「1000ドル未満の予算でエンドツーエンドに扱える小規模 LLM の性能を向上させること」**
 
-## Acknowledgements
+です。
 
-- The name (nanochat) derives from my earlier project [nanoGPT](https://github.com/karpathy/nanoGPT), which only covered pretraining.
-- nanochat is also inspired by [modded-nanoGPT](https://github.com/KellerJordan/modded-nanogpt), which gamified the nanoGPT repo with clear metrics and a leaderboard, and borrows a lot of its ideas and some implementation for pretraining.
-- Thank you to [HuggingFace](https://huggingface.co/) for fineweb and smoltalk.
-- Thank you [Lambda](https://lambda.ai/service/gpu-cloud) for the compute used in developing this project.
-- Thank you to chief LLM whisperer 🧙‍♂️ Alec Radford for advice/guidance.
-- Thank you to the repo czar Sofie [@svlandeg](https://github.com/svlandeg) for help with managing issues, pull requests and discussions of nanochat.
+ここでいうアクセシビリティとは、単なる計算コストの低さだけではありません。
 
-## Cite
+認知的な複雑さの低さも重要です。
 
-If you find nanochat helpful in your research cite simply as:
+nanochat は、無数の設定項目を持つ巨大な LLM フレームワークではありません。
+
+以下のようなものは意図的に排除しています。
+
+* 巨大な設定オブジェクト
+* 複雑なモデルファクトリ
+* if-then-else が入り乱れたコード
+
+代わりに nanochat は、
+
+* シンプル
+* 一貫性がある
+* 読みやすい
+* 改造しやすい
+* フォークしやすい
+
+という特徴を持つ「強力なベースライン実装」を目指しています。
+
+リポジトリを最初から最後まで実行するだけで、実際に会話可能な ChatGPT スタイルのモデルを構築できます。
+
+現在もっとも興味深い研究テーマは、
+
+**GPT-2 レベルに到達するまでの時間をさらに短縮すること**
+
+です。
+
+現在は約 3 時間で GPT-2（CORE スコア 0.256525）を超えられますが、事前学習工程の改善によってさらに短縮できる可能性があります。
+
+### AI 利用ポリシー
+
+現在のポリシーは **Disclosure（開示）** です。
+
+Pull Request を提出する際は、
+
+* LLM が大きく関与した部分
+* 自分で書いていないコード
+* 自分で十分理解できていないコード
+
+について明示してください。
+
+## 謝辞
+
+* nanochat の名称は、以前のプロジェクトである nanoGPT に由来しています。nanoGPT は事前学習のみを対象としていました。
+
+* nanochat は modded-nanoGPT にも大きく影響を受けています。明確な指標やランキングによって学習をゲーム化したプロジェクトであり、事前学習部分のアイデアや実装を一部参考にしています。
+
+* Hugging Face の FineWeb および SmolTalk データセットに感謝します。
+
+* 本プロジェクトの開発に使用した計算資源を提供してくれた Lambda に感謝します。
+
+* 「Chief LLM Whisperer」こと Alec Radford 氏の助言と指導に感謝します。
+
+* Issue、Pull Request、Discussions の管理を支援してくれたリポジトリ管理者 Sofie (@svlandeg) に感謝します。
+
+## 引用
+
+研究で nanochat を利用した場合は、以下の形式で引用してください。
 
 ```bibtex
 @misc{nanochat,
@@ -321,6 +386,6 @@ If you find nanochat helpful in your research cite simply as:
 }
 ```
 
-## License
+## ライセンス
 
-MIT
+MIT License
