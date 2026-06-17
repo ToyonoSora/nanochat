@@ -388,4 +388,4 @@ Pull Request を提出する際は、
 
 ## ライセンス
 
-MIT License
+MIT
