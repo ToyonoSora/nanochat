@@ -1,63 +1,63 @@
-# nanochat  
-  
-![nanochat logo](dev/nanochat.png)  
-![scaling laws](dev/scaling_laws_jan26.png)  
-  
-nanochat は、LLM（大規模言語モデル）を学習するための最もシンプルな実験用フレームワークです。単一の GPU ノードで動作するよう設計されており、コードは最小限かつ改変しやすく、トークナイズ・事前学習・ファインチューニング・評価・推論・チャット UI といった LLM の主要なすべてのステージをカバーしています。たとえば、2019 年に約 $43,000 かかった GPT-2 相当の LLM を、わずか $48（8×H100 GPU ノードで約 2 時間）で自分自身で学習し、おなじみの ChatGPT 風 Web UI で会話することができます。スポットインスタンスを使えば、総コストは約 $15 に近づきます。より一般的には、nanochat は `--depth`（GPT トランスフォーマーモデルのレイヤー数）という単一の複雑さダイヤルを設定するだけで、コンピュート最適なモデルのミニシリーズ全体を学習できるよう、すぐに使える設定になっています（GPT-2 相当の能力はおよそ depth 26 に相当します）。その他のすべてのハイパーパラメータ（トランスフォーマーの幅、ヘッド数、学習率の調整、学習期間、重み減衰など）は最適な方法で自動的に計算されます。  
-  
-リポジトリに関する質問は、[DeepWiki](https://deepwiki.com/karpathy/nanochat)（Devin/Cognition 製）を使ってリポジトリについて質問するか、[Discussions タブ](https://github.com/karpathy/nanochat/discussions)を利用するか、Discord の [#nanochat](https://discord.com/channels/1020383067459821711/1427295580895314031) チャンネルにお越しください。  
-  
-## Time-to-GPT-2 リーダーボード  
-  
-現在、開発の主な焦点は最も多くの計算量を必要とする事前学習ステージのチューニングです。modded-nanogpt リポジトリに触発され、進歩とコミュニティの協力を促進するために、nanochat は「GPT-2 スピードラン」のリーダーボードを維持しています。これは DCLM CORE スコアで測定した GPT-2 相当の能力に達するまでの実時間です。[runs/speedrun.sh](runs/speedrun.sh) スクリプトは常に GPT-2 相当モデルを学習して会話するための参照方法を反映しています。現在のリーダーボードは以下の通りです：  
-  
-| # | 時間 | val_bpb | CORE | 説明 | 日付 | コミット | 貢献者 |  
-|---|------|---------|------|------|------|--------|--------|  
-| 0 | 168 時間 | - | 0.2565 | OpenAI オリジナル GPT-2 チェックポイント | 2019 | - | OpenAI |  
-| 1 | 3.04 | 0.74833 | 0.2585 | d24 ベースライン、わずかに過学習 | 2026年1月29日 | 348fbb3 | @karpathy |  
-| 2 | 2.91 | 0.74504 | 0.2578 | d26 わずかに未学習 **+fp8** | 2026年2月2日 | a67eba3 | @karpathy |  
-| 3 | 2.76 | 0.74645 | 0.2602 | 総バッチサイズを 1M トークンに増加 | 2026年2月5日 | 2c062aa | @karpathy |  
-| 4 | 2.02 | 0.71854 | 0.2571 | データセットを NVIDIA ClimbMix に変更 | 2026年3月4日 | 324e69c | @ddudek @karpathy |  
-| 5 | 1.80 | 0.71808 | 0.2690 | autoresearch [ラウンド 1](https://x.com/karpathy/status/2031135152349524125) | 2026年3月9日 | 6ed7d1d | @karpathy |  
-| 6 | 1.65 | 0.71800 | 0.2626 | autoresearch ラウンド 2 | 2026年3月14日 | a825e63 | @karpathy |  
-  
-主要な指標は「GPT-2 までの時間」です。8×H100 GPU ノードで GPT-2（1.6B）の CORE スコア（0.256525）を上回るために必要な実時間です。2019 年の GPT-2 学習コストは約 $43,000 でしたが、7 年間にわたるスタック全体の多くの進歩により、現在ははるかに速く、$100 以下で実現できます（現在の約 $3/GPU/時間で、8×H100 ノードは約 $24/時間、2 時間で約 $48）。  
-  
-リーダーボードの解釈と貢献方法については [dev/LEADERBOARD.md](dev/LEADERBOARD.md) を参照してください。  
-  
-## Getting started
+# nanochat
 
-### Setup
+![nanochat logo](dev/nanochat.png)
+![scaling laws](dev/scaling_laws_jan26.png)
 
-nanochat uses [uv](https://docs.astral.sh/uv/) for dependency management. To install:
+nanochat は、LLM（大規模言語モデル）を学習するための最もシンプルな実験用フレームワークです。単一の GPU ノードで動作するよう設計されており、コードは最小限かつ改変しやすく、トークナイズ・事前学習・ファインチューニング・評価・推論・チャット UI といった LLM の主要なすべてのステージをカバーしています。たとえば、2019 年に約 $43,000 かかった GPT-2 相当の LLM を、わずか $48（8×H100 GPU ノードで約 2 時間）で自分自身で学習し、おなじみの ChatGPT 風 Web UI で会話することができます。スポットインスタンスを使えば、総コストは約 $15 に近づきます。より一般的には、nanochat は `--depth`（GPT トランスフォーマーモデルのレイヤー数）という単一の複雑さダイヤルを設定するだけで、コンピュート最適なモデルのミニシリーズ全体を学習できるよう、すぐに使える設定になっています（GPT-2 相当の能力はおよそ depth 26 に相当します）。その他のすべてのハイパーパラメータは自動的に決定されます。
+
+リポジトリに関する質問は、[DeepWiki](https://deepwiki.com/karpathy/nanochat)（Devin/Cognition 製）を使ってリポジトリについて質問するか、[Discussions タブ](https://github.com/karpathy/nanochat/discussions)を利用するか、Discord の [#nanochat](https://discord.com/channels/1020383067459821711/1427295580895314031) チャンネルにお越しください。
+
+## Time-to-GPT-2 リーダーボード
+
+現在、開発の主な焦点は最も多くの計算量を必要とする事前学習ステージのチューニングです。modded-nanogpt リポジトリに触発され、進歩とコミュニティの協力を促進するために、nanochat は「GPT-2 スピードラン」のリーダーボードを維持しています。これは DCLM CORE スコアで測定した GPT-2 相当の能力に達するまでの実時間です。[runs/speedrun.sh](runs/speedrun.sh) スクリプトは常に GPT-2 相当モデルを学習して会話するための参照方法を反映しています。現在のリーダーボードは以下の通りです：
+
+| # | 時間 | val_bpb | CORE | 説明 | 日付 | コミット | 貢献者 |
+|---|------|---------|------|------|------|--------|--------|
+| 0 | 168 時間 | - | 0.2565 | OpenAI オリジナル GPT-2 チェックポイント | 2019 | - | OpenAI |
+| 1 | 3.04 | 0.74833 | 0.2585 | d24 ベースライン、わずかに過学習 | 2026年1月29日 | 348fbb3 | @karpathy |
+| 2 | 2.91 | 0.74504 | 0.2578 | d26 わずかに未学習 **+fp8** | 2026年2月2日 | a67eba3 | @karpathy |
+| 3 | 2.76 | 0.74645 | 0.2602 | 総バッチサイズを 1M トークンに増加 | 2026年2月5日 | 2c062aa | @karpathy |
+| 4 | 2.02 | 0.71854 | 0.2571 | データセットを NVIDIA ClimbMix に変更 | 2026年3月4日 | 324e69c | @ddudek @karpathy |
+| 5 | 1.80 | 0.71808 | 0.2690 | autoresearch [ラウンド 1](https://x.com/karpathy/status/2031135152349524125) | 2026年3月9日 | 6ed7d1d | @karpathy |
+| 6 | 1.65 | 0.71800 | 0.2626 | autoresearch ラウンド 2 | 2026年3月14日 | a825e63 | @karpathy |
+
+主要な指標は「GPT-2 までの時間」です。8×H100 GPU ノードで GPT-2（1.6B）の CORE スコア（0.256525）を上回るために必要な実時間です。2019 年の GPT-2 学習コストは約 $43,000 でしたが、7 年間にわたるスタック全体の多くの進歩により、現在ははるかに速く、$100 以下で実現できます（現在の約 $3/GPU/時間で、8×H100 ノードは約 $24/時間、2 時間で約 $48）。
+
+リーダーボードの解釈と貢献方法については [dev/LEADERBOARD.md](dev/LEADERBOARD.md) を参照してください。
+
+## はじめに
+
+### セットアップ
+
+nanochat は依存関係の管理に [uv](https://docs.astral.sh/uv/) を使用しています。インストール方法：
 
 ```bash
-uv sync --extra gpu    # Use for CUDA (A100/H100/etc.)
-uv sync --extra cpu    # (or) Use for CPU-only / MPS
+uv sync --extra gpu    # CUDA（A100/H100 等）の場合
+uv sync --extra cpu    # CPU のみ / MPS の場合
 source .venv/bin/activate
 ```
 
-For development (adds pytest, matplotlib, ipykernel, transformers, etc.):
+開発用（pytest、matplotlib、ipykernel、transformers 等を追加）：
 
 ```bash
 uv sync --extra gpu --group dev
 ```
 
-### Reproduce and talk to GPT-2
+### GPT-2 を再現して会話する
 
-The most fun you can have is to train your own GPT-2 and talk to it. The entire pipeline to do so is contained in the single file [runs/speedrun.sh](runs/speedrun.sh), which is designed to be run on an 8XH100 GPU node. Boot up a new 8XH100 GPU box from your favorite provider (e.g. I use and like [Lambda](https://lambda.ai/service/gpu-cloud)), and kick off the training script:
+最も楽しい体験は、自分の GPT-2 を学習して会話することです。そのためのパイプライン全体が [runs/speedrun.sh](runs/speedrun.sh) という単一ファイルに含まれており、8×H100 GPU ノードで実行するよう設計されています。お好みのプロバイダー（例：[Lambda](https://lambda.ai/service/gpu-cloud)）から新しい 8×H100 GPU ボックスを起動し、学習スクリプトを開始してください：
 
 ```bash
 bash runs/speedrun.sh
 ```
 
-You may wish to do so in a screen session as this will take ~3 hours to run. Once it's done, you can talk to it via the ChatGPT-like web UI. Make sure again that your local uv virtual environment is active (run `source .venv/bin/activate`), and serve it:
+約 3 時間かかるため、screen セッション内で実行することをお勧めします。完了したら、ChatGPT 風 Web UI で会話できます。ローカルの uv 仮想環境がアクティブになっていることを確認し（`source .venv/bin/activate` を実行）、サーバーを起動してください：
 
 ```bash
 python -m scripts.chat_web
 ```
 
-And then visit the URL shown. Make sure to access it correctly, e.g. on Lambda use the public IP of the node you're on, followed by the port, so for example [http://209.20.xxx.xxx:8000/](http://209.20.xxx.xxx:8000/), etc. Then talk to your LLM as you'd normally talk to ChatGPT! Get it to write stories or poems. Ask it to tell you who you are to see a hallucination. Ask it why the sky is blue. Or why it's green. The speedrun is a 4e19 FLOPs capability model so it's a bit like talking to a kindergartener :).
+表示された URL にアクセスしてください。例えば Lambda では、ノードのパブリック IP にポートを付けてアクセスします（例：[http://209.20.xxx.xxx:8000/](http://209.20.xxx.xxx:8000/)）。あとは ChatGPT と同じように LLM と会話してください！物語や詩を書かせたり、「あなたは誰ですか？」と聞いてハルシネーションを見たり、空が青い理由や緑の理由を聞いてみてください。スピードランは 4e19 FLOPs の能力モデルなので、幼稚園児と話しているような感覚です :)
 
 ---
 
@@ -65,16 +65,16 @@ And then visit the URL shown. Make sure to access it correctly, e.g. on Lambda u
 
 ---
 
-A few more notes:
+補足事項：
 
-- The code will run just fine on the Ampere 8XA100 GPU node as well, but a bit slower.
-- All code will run just fine on even a single GPU by omitting `torchrun`, and will produce ~identical results (code will automatically switch to gradient accumulation), but you'll have to wait 8 times longer.
-- If your GPU(s) have less than 80GB, you'll have to tune some of the hyperparameters or you will OOM / run out of VRAM. Look for `--device-batch-size` in the scripts and reduce it until things fit. E.g. from 32 (default) to 16, 8, 4, 2, or even 1. Less than that you'll have to know a bit more what you're doing and get more creative.
-- Most of the code is fairly vanilla PyTorch so it should run on anything that supports that - xpu, mps, or etc, but I haven't personally exercised all of these code paths so there might be sharp edges.
+- Ampere 8×A100 GPU ノードでも問題なく動作しますが、少し遅くなります。
+- `torchrun` を省略することで単一 GPU でも同様に動作し、ほぼ同一の結果が得られます（コードは自動的に勾配累積に切り替わります）が、8 倍の時間がかかります。
+- GPU の VRAM が 80GB 未満の場合、一部のハイパーパラメータを調整しないと OOM（メモリ不足）になります。スクリプト内の `--device-batch-size` を探して、32（デフォルト）から 16、8、4、2、または 1 に減らしてください。
+- コードの大部分は標準的な PyTorch なので、xpu、mps 等でも動作するはずですが、すべてのコードパスを個人的に検証しているわけではないため、問題が生じる可能性があります。
 
-## Research
+## 研究
 
-If you are a researcher and wish to help improve nanochat, two scripts of interest are [runs/scaling_laws.sh](runs/scaling_laws.sh) and [runs/miniseries.sh](runs/miniseries.sh). See [Jan 7 miniseries v1](https://github.com/karpathy/nanochat/discussions/420) for related documentation. For quick experimentation (~5 min pretraining runs) my favorite scale is to train a 12-layer model (GPT-1 sized), e.g. like this:
+研究者の方で nanochat の改善に協力したい場合は、[runs/scaling_laws.sh](runs/scaling_laws.sh) と [runs/miniseries.sh](runs/miniseries.sh) の 2 つのスクリプトが参考になります。関連ドキュメントは [Jan 7 miniseries v1](https://github.com/karpathy/nanochat/discussions/420) を参照してください。素早い実験（約 5 分の事前学習）には、12 層モデル（GPT-1 サイズ）の学習が好みです：
 
 ```
 OMP_NUM_THREADS=1 torchrun --standalone --nproc_per_node=8 -m scripts.base_train -- \
@@ -86,126 +86,126 @@ OMP_NUM_THREADS=1 torchrun --standalone --nproc_per_node=8 -m scripts.base_train
     --save-every=-1 \
 ```
 
-This uses wandb (run name "d12"), only runs the CORE metric on last step, and it doesn't sample and save intermediate checkpoints. I like to change something in the code, re-run a d12 (or a d16 etc) and see if it helped, in an iteration loop. To see if a run helps, I like to monitor the wandb plots for:
+これは wandb（実行名 "d12"）を使用し、最終ステップのみ CORE メトリクスを実行し、中間チェックポイントのサンプリングと保存を行いません。コードを変更して d12（または d16 等）を再実行し、改善されたかどうかを確認するというイテレーションループが好みです。実行が有効かどうかを確認するために、wandb のプロットで以下を監視します：
 
-1. `val_bpb` (validation loss in vocab-size-invariant units of bits per byte) as a function of `step`, `total_training_time` and `total_training_flops`.
-2. `core_metric` (the DCLM CORE score)
-3. VRAM utilization, `train/mfu` (Model FLOPS utilization), `train/tok_per_sec` (training throughput)
+1. `val_bpb`（語彙サイズに依存しない単位のビット/バイトで表した検証損失）を `step`、`total_training_time`、`total_training_flops` の関数として
+2. `core_metric`（DCLM CORE スコア）
+3. VRAM 使用率、`train/mfu`（モデル FLOPS 使用率）、`train/tok_per_sec`（学習スループット）
 
-See an example [here](https://github.com/karpathy/nanochat/pull/498#issuecomment-3850720044).
+例は[こちら](https://github.com/karpathy/nanochat/pull/498#issuecomment-3850720044)を参照してください。
 
-The important thing to note is that nanochat is written and configured around one single dial of complexity - the depth of the transformer. This single integer automatically determines all other hyperparameters (the width of the transformer, number of heads, learning rate adjustments, training horizons, weight decays, ...) so that the trained model comes out compute optimal. The idea is that the user doesn't have to think about or set any of this, they are simply asking for a smaller or bigger model using `--depth`, and everything "just works". By sweeping out the depth, you achieve the nanochat miniseries of compute optimal models at various sizes. GPT-2 capability model (which is of most interest at the moment) happens to be somewhere around d24-d26 range with the current code. But any candidate changes to the repo have to be principled enough that they work for all settings of depth.
+重要な点として、nanochat はトランスフォーマーの深さという単一の複雑さダイヤルを中心に書かれ設定されています。この単一の整数が他のすべてのハイパーパラメータ（トランスフォーマーの幅、ヘッド数、学習率の調整、学習期間、重み減衰など）を自動的に決定し、学習済みモデルがコンピュート最適になるようにします。ユーザーはこれらについて考えたり設定したりする必要はなく、`--depth` を使って小さいモデルか大きいモデルかを指定するだけで、すべてが「うまく動作」します。深さをスイープすることで、さまざまなサイズのコンピュート最適モデルの nanochat ミニシリーズが得られます。
 
-## Running on CPU / MPS
+## CPU / MPS での実行
 
-The script [runs/runcpu.sh](runs/runcpu.sh) shows a very simple example of running on CPU or Apple Silicon. It dramatically shrinks the LLM that is being trained to make things fit into a reasonable time interval of a few ten minutes of training. You will not get strong results in this way.
+[runs/runcpu.sh](runs/runcpu.sh) スクリプトは、CPU または Apple Silicon での実行の非常にシンプルな例を示しています。学習する LLM を大幅に縮小して、数十分という合理的な時間内に収めています。この方法では強力な結果は得られません。
 
-## Precision / dtype
+## 精度 / dtype
 
-nanochat does not use `torch.amp.autocast`. Instead, precision is managed explicitly through a single global `COMPUTE_DTYPE` (defined in `nanochat/common.py`). By default this is auto-detected based on your hardware:
+nanochat は `torch.amp.autocast` を使用しません。代わりに、精度は `nanochat/common.py` で定義された単一のグローバル変数 `COMPUTE_DTYPE` を通じて明示的に管理されます。デフォルトではハードウェアに基づいて自動検出されます：
 
-| Hardware | Default dtype | Why |
-|----------|--------------|-----|
-| CUDA SM 80+ (A100, H100, ...) | `bfloat16` | Native bf16 tensor cores |
-| CUDA SM < 80 (V100, T4, ...) | `float32` | No bf16; fp16 available via `NANOCHAT_DTYPE=float16` (uses GradScaler) |
-| CPU / MPS | `float32` | No reduced-precision tensor cores |
+| ハードウェア | デフォルト dtype | 理由 |
+|------------|--------------|------|
+| CUDA SM 80+（A100、H100 等） | `bfloat16` | ネイティブ bf16 テンソルコア |
+| CUDA SM < 80（V100、T4 等） | `float32` | bf16 なし；fp16 は `NANOCHAT_DTYPE=float16` で利用可能（GradScaler を使用） |
+| CPU / MPS | `float32` | 低精度テンソルコアなし |
 
-You can override the default with the `NANOCHAT_DTYPE` environment variable:
+`NANOCHAT_DTYPE` 環境変数でデフォルトを上書きできます：
 
 ```bash
-NANOCHAT_DTYPE=float32 python -m scripts.chat_cli -p "hello"   # force fp32
-NANOCHAT_DTYPE=bfloat16 torchrun --nproc_per_node=8 -m scripts.base_train  # force bf16
+NANOCHAT_DTYPE=float32 python -m scripts.chat_cli -p "hello"   # fp32 を強制
+NANOCHAT_DTYPE=bfloat16 torchrun --nproc_per_node=8 -m scripts.base_train  # bf16 を強制
 ```
 
-How it works: model weights are stored in fp32 (for optimizer precision), but our custom `Linear` layer casts them to `COMPUTE_DTYPE` during the forward pass. Embeddings are stored directly in `COMPUTE_DTYPE` to save memory. This gives us the same mixed-precision benefit as autocast but with full explicit control over what runs in which precision.
+仕組み：モデルの重みは fp32 で保存されます（オプティマイザの精度のため）が、カスタム `Linear` レイヤーがフォワードパス中にそれらを `COMPUTE_DTYPE` にキャストします。埋め込みはメモリ節約のために直接 `COMPUTE_DTYPE` で保存されます。これにより、autocast と同じ混合精度の利点が得られますが、どの精度で何が実行されるかを完全に明示的に制御できます。
 
-Note: `float16` training automatically enables a `GradScaler` in `base_train.py` to prevent gradient underflow. SFT supports this too but RL currently does not. Inference in fp16 works fine everywhere.
+注意：`float16` 学習では、勾配のアンダーフローを防ぐために `base_train.py` で `GradScaler` が自動的に有効になります。SFT もこれをサポートしていますが、RL は現在サポートしていません。fp16 での推論はどこでも問題なく動作します。
 
-## Guides
+## ガイド
 
-I've published a number of guides that might contain helpful information, most recent to least recent:
+参考になる情報を含むガイドを公開しています（新しい順）：
 
-- [Feb 1 2026: Beating GPT-2 for <<$100: the nanochat journey](https://github.com/karpathy/nanochat/discussions/481)
-- [Jan 7 miniseries v1](https://github.com/karpathy/nanochat/discussions/420) documents the first nanochat miniseries of models.
-- To add new abilities to nanochat, see [Guide: counting r in strawberry (and how to add abilities generally)](https://github.com/karpathy/nanochat/discussions/164).
-- To customize your nanochat, see [Guide: infusing identity to your nanochat](https://github.com/karpathy/nanochat/discussions/139) in Discussions, which describes how you can tune your nanochat's personality through synthetic data generation and mixing that data into the SFT stage.
-- [Oct 13 2025: original nanochat post](https://github.com/karpathy/nanochat/discussions/1) introducing nanochat, though now it contains some deprecated information and the model is a lot older (with worse results) than current master.
+- [2026年2月1日: GPT-2 を $100 以下で超える：nanochat の旅](https://github.com/karpathy/nanochat/discussions/481)
+- [Jan 7 miniseries v1](https://github.com/karpathy/nanochat/discussions/420)：最初の nanochat モデルミニシリーズを文書化
+- nanochat に新しい能力を追加するには、[ガイド：strawberry の r を数える（および一般的な能力の追加方法）](https://github.com/karpathy/nanochat/discussions/164)を参照
+- nanochat をカスタマイズするには、Discussions の[ガイド：nanochat にアイデンティティを注入する](https://github.com/karpathy/nanochat/discussions/139)を参照。合成データ生成と SFT ステージへのデータ混合を通じて nanochat の個性を調整する方法を説明しています。
+- [2025年10月13日：nanochat オリジナル投稿](https://github.com/karpathy/nanochat/discussions/1)：nanochat を紹介していますが、現在は一部の情報が古くなっており、モデルも現在の master より古い（結果も悪い）です。
 
-## File structure
+## ファイル構成
 
 ```
 .
 ├── LICENSE
 ├── README.md
 ├── dev
-│   ├── gen_synthetic_data.py       # Example synthetic data for identity
+│   ├── gen_synthetic_data.py       # アイデンティティ用の合成データ例
 │   ├── generate_logo.html
 │   ├── nanochat.png
-│   └── repackage_data_reference.py # Pretraining data shard generation
+│   └── repackage_data_reference.py # 事前学習データシャード生成
 ├── nanochat
-│   ├── __init__.py                 # empty
-│   ├── checkpoint_manager.py       # Save/Load model checkpoints
-│   ├── common.py                   # Misc small utilities, quality of life
-│   ├── core_eval.py                # Evaluates base model CORE score (DCLM paper)
-│   ├── dataloader.py               # Tokenizing Distributed Data Loader
-│   ├── dataset.py                  # Download/read utils for pretraining data
-│   ├── engine.py                   # Efficient model inference with KV Cache
-│   ├── execution.py                # Allows the LLM to execute Python code as tool
-│   ├── gpt.py                      # The GPT nn.Module Transformer
+│   ├── __init__.py                 # 空
+│   ├── checkpoint_manager.py       # モデルチェックポイントの保存/読み込み
+│   ├── common.py                   # 各種小ユーティリティ
+│   ├── core_eval.py                # ベースモデルの CORE スコア評価（DCLM 論文）
+│   ├── dataloader.py               # トークナイズ分散データローダー
+│   ├── dataset.py                  # 事前学習データのダウンロード/読み込みユーティリティ
+│   ├── engine.py                   # KV キャッシュを使った効率的なモデル推論
+│   ├── execution.py                # LLM がツールとして Python コードを実行できるようにする
+│   ├── gpt.py                      # GPT nn.Module トランスフォーマー
 │   ├── logo.svg
-│   ├── loss_eval.py                # Evaluate bits per byte (instead of loss)
-│   ├── optim.py                    # AdamW + Muon optimizer, 1GPU and distributed
-│   ├── report.py                   # Utilities for writing the nanochat Report
-│   ├── tokenizer.py                # BPE Tokenizer wrapper in style of GPT-4
-│   └── ui.html                     # HTML/CSS/JS for nanochat frontend
+│   ├── loss_eval.py                # ビット/バイト評価（損失の代わり）
+│   ├── optim.py                    # AdamW + Muon オプティマイザ（1GPU および分散）
+│   ├── report.py                   # nanochat レポート作成ユーティリティ
+│   ├── tokenizer.py                # GPT-4 スタイルの BPE トークナイザーラッパー
+│   └── ui.html                     # nanochat フロントエンドの HTML/CSS/JS
 ├── pyproject.toml
 ├── runs
-│   ├── miniseries.sh               # Miniseries training script
-│   ├── runcpu.sh                   # Small example of how to run on CPU/MPS
-│   ├── scaling_laws.sh             # Scaling laws experiments
-│   └── speedrun.sh                 # Train the ~$100 nanochat d20
+│   ├── miniseries.sh               # ミニシリーズ学習スクリプト
+│   ├── runcpu.sh                   # CPU/MPS での実行例
+│   ├── scaling_laws.sh             # スケーリング則実験
+│   └── speedrun.sh                 # ~$100 の nanochat d20 を学習
 ├── scripts
-│   ├── base_eval.py                # Base model: CORE score, bits per byte, samples
-│   ├── base_train.py               # Base model: train
-│   ├── chat_cli.py                 # Chat model: talk to over CLI
-│   ├── chat_eval.py                # Chat model: eval tasks
-│   ├── chat_rl.py                  # Chat model: reinforcement learning
-│   ├── chat_sft.py                 # Chat model: train SFT
-│   ├── chat_web.py                 # Chat model: talk to over WebUI
-│   ├── tok_eval.py                 # Tokenizer: evaluate compression rate
-│   └── tok_train.py                # Tokenizer: train it
+│   ├── base_eval.py                # ベースモデル：CORE スコア、ビット/バイト、サンプル
+│   ├── base_train.py               # ベースモデル：学習
+│   ├── chat_cli.py                 # チャットモデル：CLI で会話
+│   ├── chat_eval.py                # チャットモデル：タスク評価
+│   ├── chat_rl.py                  # チャットモデル：強化学習
+│   ├── chat_sft.py                 # チャットモデル：SFT 学習
+│   ├── chat_web.py                 # チャットモデル：WebUI で会話
+│   ├── tok_eval.py                 # トークナイザー：圧縮率評価
+│   └── tok_train.py                # トークナイザー：学習
 ├── tasks
-│   ├── arc.py                      # Multiple choice science questions
+│   ├── arc.py                      # 多肢選択式理科問題
 │   ├── common.py                   # TaskMixture | TaskSequence
-│   ├── customjson.py               # Make Task from arbitrary jsonl convos
-│   ├── gsm8k.py                    # 8K Grade School Math questions
-│   ├── humaneval.py                # Misnomer; Simple Python coding task
-│   ├── mmlu.py                     # Multiple choice questions, broad topics
-│   ├── smoltalk.py                 # Conglomerate dataset of SmolTalk from HF
-│   └── spellingbee.py              # Task teaching model to spell/count letters
+│   ├── customjson.py               # 任意の jsonl 会話からタスクを作成
+│   ├── gsm8k.py                    # 8K 小学校算数問題
+│   ├── humaneval.py                # 名称は誤解を招くが、シンプルな Python コーディングタスク
+│   ├── mmlu.py                     # 幅広いトピックの多肢選択問題
+│   ├── smoltalk.py                 # HF の SmolTalk 複合データセット
+│   └── spellingbee.py              # モデルにスペル/文字数を教えるタスク
 ├── tests
 │   └── test_engine.py
 └── uv.lock
 ```
 
-## Contributing
+## コントリビューション
 
-The goal of nanochat is to improve the state of the art in micro models that are accessible to work with end to end on budgets of < $1000 dollars. Accessibility is about overall cost but also about cognitive complexity - nanochat is not an exhaustively configurable LLM "framework"; there are no giant configuration objects, model factories, or if-then-else monsters in the code base. It is a single, cohesive, minimal, readable, hackable, maximally-forkable "strong baseline" codebase designed to run start to end and produce a ChatGPT model you can talk to. Currently, the most interesting part personally is speeding up the latency to GPT-2 (i.e. getting a CORE score above 0.256525). Currently this takes ~3 hours, but by improving the pretraining stage we can improve this further.
+nanochat の目標は、$1,000 以下の予算でエンドツーエンドで扱えるマイクロモデルの最先端を改善することです。アクセシビリティとは全体的なコストだけでなく、認知的な複雑さについても言えます。nanochat は網羅的に設定可能な LLM「フレームワーク」ではありません。巨大な設定オブジェクト、モデルファクトリー、if-then-else の怪物はコードベースにありません。最初から最後まで実行して会話できる ChatGPT モデルを生成するよう設計された、単一の、一貫した、最小限の、読みやすい、改変しやすい、最大限フォーク可能な「強力なベースライン」コードベースです。現在、個人的に最も興味深いのは GPT-2 までのレイテンシを短縮すること（つまり CORE スコアを 0.256525 以上にすること）です。現在は約 3 時間かかりますが、事前学習ステージを改善することでさらに短縮できます。
 
-Current AI policy: disclosure. When submitting a PR, please declare any parts that had substantial LLM contribution and that you have not written or that you do not fully understand.
+現在の AI ポリシー：開示。PR を提出する際は、LLM が実質的に貢献した部分、自分で書いていない部分、または完全に理解していない部分を申告してください。
 
-## Acknowledgements
+## 謝辞
 
-- The name (nanochat) derives from my earlier project [nanoGPT](https://github.com/karpathy/nanoGPT), which only covered pretraining.
-- nanochat is also inspired by [modded-nanoGPT](https://github.com/KellerJordan/modded-nanogpt), which gamified the nanoGPT repo with clear metrics and a leaderboard, and borrows a lot of its ideas and some implementation for pretraining.
-- Thank you to [HuggingFace](https://huggingface.co/) for fineweb and smoltalk.
-- Thank you [Lambda](https://lambda.ai/service/gpu-cloud) for the compute used in developing this project.
-- Thank you to chief LLM whisperer 🧙‍♂️ Alec Radford for advice/guidance.
-- Thank you to the repo czar Sofie [@svlandeg](https://github.com/svlandeg) for help with managing issues, pull requests and discussions of nanochat.
+- nanochat という名前は、事前学習のみをカバーしていた以前のプロジェクト [nanoGPT](https://github.com/karpathy/nanoGPT) に由来しています。
+- nanochat は [modded-nanoGPT](https://github.com/KellerJordan/modded-nanogpt) にも触発されています。このリポジトリは nanoGPT リポジトリを明確なメトリクスとリーダーボードでゲーム化し、事前学習のアイデアと実装の多くを借用しています。
+- [HuggingFace](https://huggingface.co/) に fineweb と smoltalk を提供していただいたことに感謝します。
+- このプロジェクトの開発に使用した計算リソースを提供してくれた [Lambda](https://lambda.ai/service/gpu-cloud) に感謝します。
+- アドバイスと指導をいただいた LLM の達人 🧙‍♂️ Alec Radford に感謝します。
+- nanochat の issue、プルリクエスト、ディスカッションの管理を手伝ってくれたリポジトリ管理者 Sofie [@svlandeg](https://github.com/svlandeg) に感謝します。
 
-## Cite
+## 引用
 
-If you find nanochat helpful in your research cite simply as:
+研究で nanochat が役立った場合は、以下のように引用してください：
 
 ```bibtex
 @misc{nanochat,
@@ -217,6 +217,6 @@ If you find nanochat helpful in your research cite simply as:
 }
 ```
 
-## License
+## ライセンス
 
 MIT
