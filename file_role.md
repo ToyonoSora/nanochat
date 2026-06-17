@@ -24,13 +24,38 @@
 | report.py | 学習レポート生成 |
 
 ## runs/
-学習実行のエントリーポイントとなるシェルスクリプト群。データ取得からトークナイザー訓練、事前学習、SFT、評価まで一連のパイプラインをまとめて実行します。
+学習実行のエントリーポイントとなるシェルスクリプト群。データ取得からトークナイザー訓練、事前学習、SFT、評価まで一連のパイプラインをまとめて実行するファイル。
 
-ファイル	役割
-speedrun.sh	8xH100で GPT-2超えを目指すメインの実行スクリプト
-miniseries.sh	複数の--depthでモデルシリーズをスイープ
-scaling_laws.sh	スケーリング則の調査用スイープ
-runcpu.sh	CPU環境での実行用
+|ファイル|役割|
+|-------|----|
+|speedrun.sh|8xH100で GPT-2超えを目指すメインの実行スクリプト|
+|miniseries.sh|複数の--depthでモデルシリーズをスイープ|
+|scaling_laws.sh|スケーリング則の調査用スイープ|
+|runcpu.sh|CPU環境での実行用|
+
+## scripts/
+各フェーズの実行スクリプト群。nanochat/のコアライブラリを呼び出す形で、AIの学習・評価・推論の各ステップを実行するファイル。ファイル名のプレフィックスで役割が分類されている。
+
+tok_ — トークナイザー関連
+|ファイル|役割|
+|-------|----|
+|tok_train.py|GPT-4スタイルのBPEトークナイザーを学習する|
+|tok_eval.py|トークナイザーの圧縮率を評価する|
+
+base_ — ベースモデル（事前学習）関連
+|ファイル|役割|
+|-------|----|
+|base_train.py|GPTモデルの事前学習（単体GPU・分散対応|
+|base_eval.py|ベースモデルの評価（CORE / BPB / サンプル生成の3モード|
+
+chat_ — チャットモデル（ファインチューニング・推論）関連
+|ファイル|役割|
+|-------|----|
+|chat_sft.py|Supervised Fine-Tuning（SFT）の実行|
+|chat_rl.py|GSM8KによるGRPO/REINFORCEスタイルの強化学習|
+|chat_eval.py|チャットモデルのベンチマーク評価（ARC-Easyなど)|
+|chat_cli.py|ターミナル上でモデルとチャットするCLIインターフェース|
+|chat_web.py|FastAPIベースのWebチャットサーバー（複数GPU対応)|
 
 tasks/
 評価・SFT用のタスク（データセット）定義。Task基底クラスを継承した各ベンチマークの実装が入っています。
@@ -52,3 +77,22 @@ tests/
 ファイル	役割
 test_engine.py	Engine・KVCacheの動作テスト（サンプリングの多様性、シード再現性、温度0の決定性など）
 test_attention_fallback.py	アテンション実装のフォールバック動作テスト
+
+dev
+tried and failed at DyT
+last month
+nanochat
+add comment
+2 months ago
+runs
+fix small bug with params logging and batch size
+3 months ago
+scripts
+Merge pull request karpathy#634 from 2bitbit/fix-docs-and-comments
+3 months ago
+tasks
+MMLU main split is named auxiliary_train, not train
+3 months ago
+tests
+delete autocast, an unnecessary thorn in my side, manage dtypes directly
+3 months ago
